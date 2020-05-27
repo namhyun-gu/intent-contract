@@ -9,3 +9,8 @@ annotation class IntentTarget
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 annotation class Extra
+
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class Optional

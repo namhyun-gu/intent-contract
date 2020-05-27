@@ -9,7 +9,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val secondActivity = IntentTargets.secondActivity(this, "Test")
+        val secondActivity = IntentTargets.secondActivity(this, "Test", null)
         IntentTargets.thirdActivity(
             context = this,
             extraBoolean = false,

@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import dev.namhyun.intentcontract.Extra
 import dev.namhyun.intentcontract.IntentTarget
+import dev.namhyun.intentcontract.Optional
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
@@ -118,7 +119,11 @@ class IntentContractProcessor : AbstractProcessor() {
         builder.addParameter("context", contextClass)
         extras.forEach {
             val extraName = it.simpleName.toString()
-            builder.addParameter(extraName, it.asType().asTypeName().asKotlinType())
+            val isOptional = it.getAnnotation(Optional::class.java) != null
+            builder.addParameter(
+                extraName,
+                it.asType().asTypeName().asKotlinType().copy(nullable = isOptional)
+            )
         }
 
         builder.addStatement(
@@ -129,11 +134,18 @@ class IntentContractProcessor : AbstractProcessor() {
         )
         extras.forEach {
             val extraName = it.simpleName.toString()
+            val isOptional = it.getAnnotation(Optional::class.java) != null
+            if (isOptional) {
+                builder.beginControlFlow("if (%L != null)", extraName)
+            }
             builder.addStatement(
                 "intent.putExtra(%L, %L)",
                 getConstantName(targetName, extraName),
                 extraName
             )
+            if (isOptional) {
+                builder.endControlFlow()
+            }
         }
         builder.addStatement("return %L", "intent")
         return builder.build()
