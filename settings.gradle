@@ -1,4 +1,4 @@
 rootProject.name = 'intent-contract'
-include ':intentcontract'
+include ':intentcontract-annotations'
 include ':intentcontract-compiler'
 include ':example'
