@@ -1,0 +1,12 @@
+apply plugin: 'com.novoda.bintray-release'
+apply from: '../dependencies.gradle'
+
+publish {
+    userOrg = 'namhyun-gu'
+    groupId = 'dev.namhyun.intentcontract'
+    artifactId = 'intentcontract-annotations'
+    publishVersion = versions.version
+    desc = ''
+    website = 'https://github.com/namhyun-gu/intent-contract'
+    repoName = 'intentcontract'
+}

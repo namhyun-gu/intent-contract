@@ -1,8 +1,21 @@
 # Intent Contract
 
+[ ![Download](https://api.bintray.com/packages/namhyun-gu/intentcontract/intentcontract-compiler/images/download.svg) ](https://bintray.com/namhyun-gu/intentcontract/intentcontract-compiler/_latestVersion)
+
 ## Getting Started
 
-WIP
+Add dependency codes to your **module** level  ```build.gradle``` file.
+
+```groovy
+apply plugin: 'kotlin-kapt'
+
+...
+
+dependencies {
+  implementation 'dev.namhyun.intentcontract:intentcontract-annotations:0.1.0'
+  kapt 'dev.namhyun.intentcontract:intentcontract-compiler:0.1.0'
+}
+```
 
 ## Usage
 
