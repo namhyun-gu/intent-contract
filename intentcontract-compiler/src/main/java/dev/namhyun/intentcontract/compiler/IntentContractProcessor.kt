@@ -2,9 +2,9 @@ package dev.namhyun.intentcontract.compiler
 
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
-import dev.namhyun.intentcontract.Extra
-import dev.namhyun.intentcontract.IntentTarget
-import dev.namhyun.intentcontract.Optional
+import dev.namhyun.intentcontract.annotations.Extra
+import dev.namhyun.intentcontract.annotations.IntentTarget
+import dev.namhyun.intentcontract.annotations.Optional
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File

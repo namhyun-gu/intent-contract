@@ -3,9 +3,9 @@ package dev.namhyun.intentcontract.example
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import dev.namhyun.intentcontract.Extra
-import dev.namhyun.intentcontract.IntentTarget
-import dev.namhyun.intentcontract.Optional
+import dev.namhyun.intentcontract.annotations.Extra
+import dev.namhyun.intentcontract.annotations.IntentTarget
+import dev.namhyun.intentcontract.annotations.Optional
 import dev.namhyun.intentcontract.gen.IntentContracts
 
 @IntentTarget
