@@ -1,6 +1,8 @@
 # Intent Contract
 
 [ ![Download](https://api.bintray.com/packages/namhyun-gu/intentcontract/intentcontract-compiler/images/download.svg) ](https://bintray.com/namhyun-gu/intentcontract/intentcontract-compiler/_latestVersion)
+![Publish](https://github.com/namhyun-gu/intent-contract/workflows/Publish/badge.svg)
+![GitHub](https://img.shields.io/github/license/namhyun-gu/intent-contract)
 
 ## Getting Started
 
@@ -9,11 +11,11 @@ Add dependency codes to your **module** level `build.gradle` file.
 ```groovy
 apply plugin: 'kotlin-kapt'
 
-...
+// ...
 
 dependencies {
-  implementation 'dev.namhyun.intentcontract:intentcontract-annotations:0.1.0'
-  kapt 'dev.namhyun.intentcontract:intentcontract-compiler:0.1.0'
+  implementation 'dev.namhyun.intentcontract:intentcontract-annotations:<latest-version>'
+  kapt 'dev.namhyun.intentcontract:intentcontract-compiler:<latest-version>'
 }
 ```
 
@@ -37,7 +39,7 @@ class SecondActivity : AppCompatActivity() {
     @Extra
     var optionalTest: String = "World"
 
-    ...
+    // ...
 
 }
 ```
