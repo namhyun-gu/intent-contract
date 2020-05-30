@@ -2,6 +2,7 @@
 
 [ ![Download](https://api.bintray.com/packages/namhyun-gu/intentcontract/intentcontract-compiler/images/download.svg) ](https://bintray.com/namhyun-gu/intentcontract/intentcontract-compiler/_latestVersion)
 ![Publish](https://github.com/namhyun-gu/intent-contract/workflows/Publish/badge.svg)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2132da86b38f4001abd12ecbc1445cb7)](https://app.codacy.com/manual/namhyun-gu/intent-contract?utm_source=github.com&utm_medium=referral&utm_content=namhyun-gu/intent-contract&utm_campaign=Badge_Grade_Dashboard)
 ![GitHub](https://img.shields.io/github/license/namhyun-gu/intent-contract)
 
 ## Getting Started
