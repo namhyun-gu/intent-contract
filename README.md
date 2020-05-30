@@ -4,7 +4,7 @@
 
 ## Getting Started
 
-Add dependency codes to your **module** level  ```build.gradle``` file.
+Add dependency codes to your **module** level `build.gradle` file.
 
 ```groovy
 apply plugin: 'kotlin-kapt'
@@ -19,11 +19,11 @@ dependencies {
 
 ## Usage
 
-- Add ```@IntentTarget``` annotation to Activity.
-- If you provide extra properties, Add ```@Extra``` annotation to field.
+- Add `@IntentTarget` annotation to Activity.
+- If you provide extra properties, Add `@Extra` annotation to field.
   - **Field must be public and writable**
   - Support types : **Boolean, Byte, Char, Double, Float, Int, Long, Short, String**
-- Some extra can be optional. Add ```@Optional``` annotation to field.
+- Some extra can be optional. Add `@Optional` annotation to field.
   - Optional fields generate nullable types in IntentTargets function. If value is null, field keep initalized value.
 
 ```kotlin
@@ -55,6 +55,7 @@ IntentContracts.contact(this)
 ```
 
 ## Example
+
 ```kotlin
 class MainActivity : AppCompatActivity() {
 
@@ -70,14 +71,14 @@ class MainActivity : AppCompatActivity() {
 ```kotlin
 @IntentTarget
 class SecondActivity : AppCompatActivity() {
-  
+
   @Extra
   var test: String = "Hello"
 
   @Optional
   @Extra
   var optionalTest: String = "World"
-  
+
   override fun onCreate(savedInstanceState: Bundle?) {
       super.onCreate(savedInstanceState)
       setContentView(R.layout.activity_second)
@@ -86,4 +87,22 @@ class SecondActivity : AppCompatActivity() {
       Log.d("SecondActivity", "Receive: $optionalTest") // Receive: World
   }
 }
+```
+
+## License
+
+```xml
+Copyright 2019 Namhyun, Gu
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
