@@ -95,7 +95,7 @@ class SecondActivity : AppCompatActivity() {
 ## License
 
 ```xml
-Copyright 2019 Namhyun, Gu
+Copyright 2020 Namhyun, Gu
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

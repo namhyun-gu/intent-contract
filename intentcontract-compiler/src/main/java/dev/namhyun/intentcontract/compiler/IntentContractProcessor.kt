@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Namhyun, Gu
+ * Copyright 2020 Namhyun, Gu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package dev.namhyun.intentcontract.compiler
 
 import com.google.auto.service.AutoService
@@ -36,8 +37,6 @@ import com.squareup.kotlinpoet.asTypeName
 import dev.namhyun.intentcontract.annotations.Extra
 import dev.namhyun.intentcontract.annotations.IntentTarget
 import dev.namhyun.intentcontract.annotations.Optional
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -48,6 +47,8 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 
 @AutoService(Processor::class)
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.ISOLATING)
