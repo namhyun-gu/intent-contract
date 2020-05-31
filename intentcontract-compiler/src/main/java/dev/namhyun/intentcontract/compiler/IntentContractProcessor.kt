@@ -36,6 +36,8 @@ import com.squareup.kotlinpoet.asTypeName
 import dev.namhyun.intentcontract.annotations.Extra
 import dev.namhyun.intentcontract.annotations.IntentTarget
 import dev.namhyun.intentcontract.annotations.Optional
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -46,8 +48,6 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 
 @AutoService(Processor::class)
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.ISOLATING)
@@ -70,10 +70,10 @@ class IntentContractProcessor : AbstractProcessor() {
         findIntentTargets(roundEnv)
         findExtras(roundEnv)
         if (roundEnv.processingOver()) {
-            val intentTargetSpec = buildIntentTargets(targetMap)
-            writeTypeSpec(intentTargetSpec)
-            val intentContractSpec = buildIntentContracts(targetMap)
-            writeTypeSpec(intentContractSpec)
+            val intentTargets = buildIntentTargets(targetMap)
+            writeTypeSpec(intentTargets)
+            val intentContracts = buildIntentContracts(targetMap)
+            writeTypeSpec(intentContracts)
             val targetContracts = buildTargetContracts(targetMap)
             targetContracts.forEach {
                 writeTypeSpec(it)
@@ -130,30 +130,25 @@ class IntentContractProcessor : AbstractProcessor() {
     }
 
     private fun buildIntentTargets(targetMap: Map<TypeElement, List<Element>>): TypeSpec {
-        val builder = TypeSpec.objectBuilder("IntentTargets")
-
-        val properties = mutableListOf<PropertySpec>()
-        targetMap.forEach { properties.addAll(buildConstants(it.key, it.value)) }
-        builder.addProperties(properties)
-
-        val funcSpecs = targetMap.map { buildTargetFunc(it.key, it.value) }
-        builder.addFunctions(funcSpecs)
-
-        return builder.build()
+        return TypeSpec.objectBuilder("IntentTargets")
+            .addFunctions(targetMap.map { (target, extras) ->
+                buildTargetFunc(target, extras)
+            })
+            .build()
     }
 
-    private fun buildTargetFunc(intentTarget: TypeElement, extras: List<Element>): FunSpec {
-        val targetName = intentTarget.simpleName.toString()
+    private fun buildTargetFunc(target: TypeElement, extras: List<Element>): FunSpec {
+        val targetName = target.name()
         val builder = FunSpec.builder(targetName.decapitalize())
             .returns(intentClass)
 
         builder.addParameter("context", contextClass)
-        extras.forEach {
-            val extraName = it.simpleName.toString()
-            val isOptional = it.getAnnotation(Optional::class.java) != null
+        for (extra in extras) {
+            val name = extra.name()
+            val isOptional = extra.getAnnotation(Optional::class.java) != null
             builder.addParameter(
-                extraName,
-                it.asType().asTypeName().asKotlinType().copy(nullable = isOptional)
+                name,
+                extra.asType().asTypeName().asKotlinType().copy(nullable = isOptional)
             )
         }
 
@@ -161,18 +156,20 @@ class IntentContractProcessor : AbstractProcessor() {
             "val intent = %T(%L, %L)",
             intentClass,
             "context",
-            "${intentTarget.qualifiedName}::class.java"
+            "${target.fullName()}::class.java"
         )
-        extras.forEach {
-            val extraName = it.simpleName.toString()
-            val isOptional = it.getAnnotation(Optional::class.java) != null
+
+        for (extra in extras) {
+            val name = extra.name()
+            val isOptional = extra.getAnnotation(Optional::class.java) != null
             if (isOptional) {
-                builder.beginControlFlow("if (%L != null)", extraName)
+                builder.beginControlFlow("if (%L != null)", name)
             }
             builder.addStatement(
-                "intent.putExtra(%L, %L)",
-                getConstantName(targetName, extraName),
-                extraName
+                "intent.putExtra(%L.%L, %L)",
+                getContractName(targetName),
+                getConstantName(name),
+                name
             )
             if (isOptional) {
                 builder.endControlFlow()
@@ -183,16 +180,13 @@ class IntentContractProcessor : AbstractProcessor() {
     }
 
     private fun buildConstants(
-        intentTarget: TypeElement,
         extras: List<Element>
     ): List<PropertySpec> {
-        val targetName = intentTarget.simpleName.toString()
         return extras.map {
-            val extraName = it.simpleName.toString()
-            val constantName = getConstantName(targetName, extraName)
-            PropertySpec.builder(constantName, String::class)
+            val name = getConstantName(it.name())
+            PropertySpec.builder(name, String::class)
                 .addModifiers(KModifier.CONST)
-                .initializer("%S", constantName.toLowerCase())
+                .initializer("%S", name.toLowerCase())
                 .build()
         }
     }
@@ -200,15 +194,15 @@ class IntentContractProcessor : AbstractProcessor() {
     private fun buildIntentContracts(targetMap: Map<TypeElement, List<Element>>): TypeSpec {
         val builder = TypeSpec.objectBuilder("IntentContracts")
         val contactFuncBuilder = FunSpec.builder("contact")
-            .addParameter("context", contextClass)
+            .addParameter("target", contextClass)
 
-        targetMap.keys.forEach {
-            val name = it.simpleName.toString()
+        for (target in targetMap.keys) {
+            val name = target.name()
             val contractorName = getContractName(name)
             val contractorClass = ClassName("dev.namhyun.intentcontract.gen", contractorName)
             contactFuncBuilder
-                .beginControlFlow("if (%L is %T)", "context", it.asType())
-                .addStatement("%T.contact(%L)", contractorClass, "context")
+                .beginControlFlow("if (%L is %T)", "target", target.asType())
+                .addStatement("%T.contact(%L)", contractorClass, "target")
                 .endControlFlow()
         }
 
@@ -217,49 +211,55 @@ class IntentContractProcessor : AbstractProcessor() {
     }
 
     private fun buildTargetContracts(targetMap: Map<TypeElement, List<Element>>): List<TypeSpec> {
-        return targetMap.map {
-            val targetName = it.key.simpleName.toString()
+        return targetMap.map { (target, extras) ->
+            val targetName = target.name()
             val builder = TypeSpec.objectBuilder(getContractName(targetName))
-            val contactFuncBuilder = FunSpec.builder("contact")
-                .addParameter("activity", it.key.asClassName())
-                .addStatement("val intent = %L.intent", "activity")
+                .addProperties(buildConstants(extras))
 
-            for (element in it.value) {
-                val elementName = element.simpleName.toString()
-                val constantName = getConstantName(targetName, elementName)
-                contactFuncBuilder
-                    .beginControlFlow("if (intent.hasExtra(IntentTargets.$constantName))")
+            val funcBuilder = FunSpec.builder("contact")
+                .addParameter("target", target.asClassName())
+                .addStatement("val intent = %L.intent", "target")
+
+            for (extra in extras) {
+                val name = extra.name()
+                val methodLiteral = getExtraMethodLiteral(
+                    extra.asType().asTypeName(),
+                    getConstantName(name)
+                )
+                funcBuilder
+                    .beginControlFlow(
+                        "if (intent.hasExtra(%L))",
+                        getConstantName(name)
+                    )
                     .addStatement(
-                        "activity.%L = %L.${getExtraMethodLiteral(
-                            element.asType().asTypeName(),
-                            getConstantName(targetName, elementName)
-                        )}",
-                        elementName,
+                        "target.%L = %L.$methodLiteral",
+                        name,
                         "intent"
                     )
                     .endControlFlow()
             }
-
-            builder.addFunction(contactFuncBuilder.build())
+            builder.addFunction(funcBuilder.build())
             builder.build()
         }
     }
 
     // TODO Support Array type extra
-    private fun getExtraMethodLiteral(type: TypeName, extraName: String): String {
-        val extraConstant = "IntentTargets.$extraName"
+    private fun getExtraMethodLiteral(
+        type: TypeName,
+        extraName: String
+    ): String {
         return when (type) {
-            BOOLEAN -> "getBooleanExtra($extraConstant, false)"
-            BYTE -> "getByteExtra($extraConstant, 0)"
-            CHAR -> "getCharExtra($extraConstant, '\\u0000')"
-            DOUBLE -> "getDoubleExtra($extraConstant, 0.0)"
-            FLOAT -> "getFloatExtra($extraConstant, 0.0f)"
-            INT -> "getIntExtra($extraConstant, 0)"
-            LONG -> "getLongExtra($extraConstant, 0)"
-            SHORT -> "getShortExtra($extraConstant, 0)"
+            BOOLEAN -> "getBooleanExtra($extraName, false)"
+            BYTE -> "getByteExtra($extraName, 0)"
+            CHAR -> "getCharExtra($extraName, '\\u0000')"
+            DOUBLE -> "getDoubleExtra($extraName, 0.0)"
+            FLOAT -> "getFloatExtra($extraName, 0.0f)"
+            INT -> "getIntExtra($extraName, 0)"
+            LONG -> "getLongExtra($extraName, 0)"
+            SHORT -> "getShortExtra($extraName, 0)"
             else -> {
                 return when (type.toString()) {
-                    "java.lang.String" -> "getStringExtra($extraConstant)"
+                    "java.lang.String" -> "getStringExtra($extraName)"
                     else -> {
                         processingEnv.printError("Not support extra type. $type")
                         ""
@@ -269,8 +269,8 @@ class IntentContractProcessor : AbstractProcessor() {
         }
     }
 
-    private fun getConstantName(targetName: String, extraName: String): String =
-        "EXTRA_${targetName.toUpperCase()}_${extraName.toUpperCase()}"
+    private fun getConstantName(extraName: String): String =
+        "EXTRA_${extraName.camelToSnakeCase().toUpperCase()}"
 
     private fun getContractName(targetName: String): String = "${targetName}_Contract"
 }

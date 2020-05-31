@@ -18,6 +18,8 @@ package dev.namhyun.intentcontract.compiler
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.Element
+import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 
 fun ProcessingEnvironment.print(message: String, kind: Diagnostic.Kind = Diagnostic.Kind.NOTE) =
@@ -26,6 +28,14 @@ fun ProcessingEnvironment.print(message: String, kind: Diagnostic.Kind = Diagnos
 fun ProcessingEnvironment.printWarn(message: String) = print(message, Diagnostic.Kind.WARNING)
 
 fun ProcessingEnvironment.printError(message: String) = print(message, Diagnostic.Kind.ERROR)
+
+fun Element.name() = simpleName.toString()
+
+fun TypeElement.fullName() = this.qualifiedName.toString()
+
+fun String.camelToSnakeCase(): String {
+    return "[A-Z]".toRegex().replace(this) { "_${it.value}" }
+}
 
 internal fun TypeName.asKotlinType() =
     when (this.toString()) {
