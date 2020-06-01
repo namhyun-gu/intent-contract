@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.namhyun.intentcontract.compiler
 
 import com.squareup.kotlinpoet.ClassName
@@ -30,9 +29,11 @@ fun ProcessingEnvironment.printWarn(message: String) = print(message, Diagnostic
 
 fun ProcessingEnvironment.printError(message: String) = print(message, Diagnostic.Kind.ERROR)
 
-fun Element.name() = simpleName.toString()
+val Element.name
+    get() = simpleName.toString()
 
-fun TypeElement.fullName() = this.qualifiedName.toString()
+val TypeElement.fullName
+    get() = this.qualifiedName.toString()
 
 fun String.camelToSnakeCase(): String {
     return "[A-Z]".toRegex().replace(this) { "_${it.value}" }

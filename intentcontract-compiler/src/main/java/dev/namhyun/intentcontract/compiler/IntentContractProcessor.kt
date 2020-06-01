@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.namhyun.intentcontract.compiler
 
 import com.google.auto.service.AutoService
@@ -37,6 +36,8 @@ import com.squareup.kotlinpoet.asTypeName
 import dev.namhyun.intentcontract.annotations.Extra
 import dev.namhyun.intentcontract.annotations.IntentTarget
 import dev.namhyun.intentcontract.annotations.Optional
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -47,8 +48,6 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 
 @AutoService(Processor::class)
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.ISOLATING)
@@ -139,13 +138,13 @@ class IntentContractProcessor : AbstractProcessor() {
     }
 
     private fun buildTargetFunc(target: TypeElement, extras: List<Element>): FunSpec {
-        val targetName = target.name()
+        val targetName = target.name
         val builder = FunSpec.builder(targetName.decapitalize())
             .returns(intentClass)
 
         builder.addParameter("context", contextClass)
         for (extra in extras) {
-            val name = extra.name()
+            val name = extra.name
             val isOptional = extra.getAnnotation(Optional::class.java) != null
             builder.addParameter(
                 name,
@@ -157,11 +156,11 @@ class IntentContractProcessor : AbstractProcessor() {
             "val intent = %T(%L, %L)",
             intentClass,
             "context",
-            "${target.fullName()}::class.java"
+            "${target.fullName}::class.java"
         )
 
         for (extra in extras) {
-            val name = extra.name()
+            val name = extra.name
             val isOptional = extra.getAnnotation(Optional::class.java) != null
             if (isOptional) {
                 builder.beginControlFlow("if (%L != null)", name)
@@ -184,7 +183,7 @@ class IntentContractProcessor : AbstractProcessor() {
         extras: List<Element>
     ): List<PropertySpec> {
         return extras.map {
-            val name = getConstantName(it.name())
+            val name = getConstantName(it.name)
             PropertySpec.builder(name, String::class)
                 .addModifiers(KModifier.CONST)
                 .initializer("%S", name.toLowerCase())
@@ -198,7 +197,7 @@ class IntentContractProcessor : AbstractProcessor() {
             .addParameter("target", contextClass)
 
         for (target in targetMap.keys) {
-            val name = target.name()
+            val name = target.name
             val contractorName = getContractName(name)
             val contractorClass = ClassName("dev.namhyun.intentcontract.gen", contractorName)
             contactFuncBuilder
@@ -213,7 +212,7 @@ class IntentContractProcessor : AbstractProcessor() {
 
     private fun buildTargetContracts(targetMap: Map<TypeElement, List<Element>>): List<TypeSpec> {
         return targetMap.map { (target, extras) ->
-            val targetName = target.name()
+            val targetName = target.name
             val builder = TypeSpec.objectBuilder(getContractName(targetName))
                 .addProperties(buildConstants(extras))
 
@@ -222,7 +221,7 @@ class IntentContractProcessor : AbstractProcessor() {
                 .addStatement("val intent = %L.intent", "target")
 
             for (extra in extras) {
-                val name = extra.name()
+                val name = extra.name
                 val methodLiteral = getExtraMethodLiteral(
                     extra.asType().asTypeName(),
                     getConstantName(name)
